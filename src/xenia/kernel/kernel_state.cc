@@ -43,7 +43,7 @@ DECLARE_int32(network_mode);
 namespace xe {
 namespace kernel {
 
-constexpr std::chrono::milliseconds kDeferredOverlappedDelayMillis(100);
+constexpr std::chrono::milliseconds kDeferredOverlappedDelayMillis(25);
 
 // This is a global object initialized with the XboxkrnlModule.
 // It references the current kernel state object that all kernel methods should
@@ -1056,7 +1056,9 @@ void KernelState::CompleteOverlappedDeferredEx(
     if (pre_callback) {
       pre_callback();
     }
-    // 5454082B infinitely loads free roam in netplay without sleep.
+    // 5454082B infinitely loads free roam in netplay without sleep, minimum 8ms
+    // required.
+    // 53450814 black screens in netplay before main menu with 84ms delay.
     xe::threading::Sleep(kDeferredOverlappedDelayMillis);
     uint32_t extended_error, length;
     auto result = completion_callback(extended_error, length);
