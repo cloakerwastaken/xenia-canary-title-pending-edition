@@ -538,6 +538,10 @@ bool Memory::AddVirtualMappedRange(uint32_t virtual_address, uint32_t mask,
 cpu::MMIORange* Memory::LookupVirtualMappedRange(uint32_t virtual_address) {
   return mmio_handler_->LookupRange(virtual_address);
 }
+// changed 3 false statements to true, bo2 didnt call a debug break,
+// need more info on mem acc violations,
+// they keep causing fps drops, such a bad fix
+// this is basically a stub
 
 bool Memory::AccessViolationCallback(
     global_unique_lock_type global_lock_locked_once, void* host_address,
@@ -549,12 +553,12 @@ bool Memory::AccessViolationCallback(
           reinterpret_cast<size_t>(virtual_membase_) ||
       reinterpret_cast<size_t>(host_address) >=
           reinterpret_cast<size_t>(physical_membase_)) {
-    return false;
+    return true;
   }
   uint32_t virtual_address = HostToGuestVirtual(host_address);
   BaseHeap* heap = LookupHeap(virtual_address);
   if (heap->heap_type() != HeapType::kGuestPhysical) {
-    return false;
+    return true;
   }
 
   // Access violation callbacks from the guest are triggered when the global
@@ -564,7 +568,7 @@ bool Memory::AccessViolationCallback(
   // the length - guranteed not to cross page boundaries also.
   auto physical_heap = static_cast<PhysicalHeap*>(heap);
   return physical_heap->TriggerCallbacks(std::move(global_lock_locked_once),
-                                         virtual_address, 1, is_write, false);
+                                         virtual_address, 1, is_write, true); // dont touch that 1, its fragile
 }
 
 bool Memory::AccessViolationCallbackThunk(
@@ -584,7 +588,7 @@ bool Memory::TriggerPhysicalMemoryCallbacks(
                                            virtual_address, length, is_write,
                                            unwatch_exact_range, unprotect);
   }
-  return false;
+  return true; // force call back; was set to false
 }
 
 void* Memory::RegisterPhysicalMemoryInvalidationCallback(

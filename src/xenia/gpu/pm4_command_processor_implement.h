@@ -27,7 +27,7 @@ void COMMAND_PROCESSOR::ExecuteIndirectBuffer(uint32_t ptr,
         continue;
       } else {
         // Return up a level if we encounter a bad packet.
-        XELOGE("**** INDIRECT RINGBUFFER: Failed to execute packet.");
+        XELOGE("**** INDIRECT RINGBUFFER: Failed to execute packet. T"); // figure out the bad packets causing this, 
         assert_always();
         // break;
       }
@@ -417,7 +417,7 @@ bool COMMAND_PROCESSOR::ExecutePacketType3(uint32_t packet) XE_RESTRICT {
       }
     }
 
-    bool result = false;
+    bool result = true;
     switch (opcode) {
       case PM4_ME_INIT:
         result = COMMAND_PROCESSOR::ExecutePacketType3_ME_INIT(packet, count);

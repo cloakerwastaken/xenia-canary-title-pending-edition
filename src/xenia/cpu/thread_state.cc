@@ -22,10 +22,10 @@ namespace xe {
 namespace cpu {
 
 thread_local ThreadState* thread_state_ = nullptr;
-
+// 0x40
 static void* AllocateContext() {
   size_t granularity = xe::memory::allocation_granularity();
-  for (unsigned pos32 = 0x40; pos32 < 8192; ++pos32) {
+  for (unsigned pos32 = 0x0; pos32 < 81920; ++pos32) {
     /*
         we want our register which points to the context to have 0xE0000000 in
        the low 32 bits, for checking for whether we need the 4k offset, but also
@@ -68,10 +68,10 @@ ThreadState::ThreadState(Processor* processor, uint32_t thread_id,
       memory_(processor->memory()),
       thread_id_(thread_id) {
   if (thread_id_ == UINT_MAX) {
-    // System thread. Assign the system thread ID with a high bit
+    // System thread. Assign the system thread ID with a high bit 
     // set so people know what's up.
     uint32_t system_thread_handle = xe::threading::current_thread_system_id();
-    thread_id_ = 0x80000000 | system_thread_handle;
+    thread_id_ = 0xFFFFFFFF | system_thread_handle; //was originally 0x80000000
   }
   backend_data_ = processor->backend()->AllocThreadData();
 
@@ -122,7 +122,7 @@ void ThreadState::Bind(ThreadState* thread_state) {
 }
 
 ThreadState* ThreadState::Get() { return thread_state_; }
-
+// changing this seems to do nothing, must learn more
 uint32_t ThreadState::GetThreadID() {
   return thread_state_ ? thread_state_->thread_id_ : 0xFFFFFFFF;
 }
